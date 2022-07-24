@@ -9,6 +9,7 @@ import {
 } from '@angular/router';
 import {Observable} from 'rxjs';
 import {AppService} from '@services/app.service';
+import { BancoLocal } from '@/shared/indexeddb.service';
 
 @Injectable({
     providedIn: 'root'
@@ -24,7 +25,12 @@ export class AuthGuard implements CanActivate, CanActivateChild {
         | Promise<boolean | UrlTree>
         | boolean
         | UrlTree {
-        return this.getProfile();
+            let token = localStorage.getItem('token')
+            if (!token) {
+                this.router.navigate(['login']);
+                return false
+            }
+        return this.getToken();
     }
 
     canActivateChild(
@@ -38,13 +44,13 @@ export class AuthGuard implements CanActivate, CanActivateChild {
         return this.canActivate(next, state);
     }
 
-    async getProfile() {
-        if (this.appService.user) {
-            return true;
-        }
+    async getToken() {
 
         try {
-            await this.appService.getProfile();
+            
+            let collection = await BancoLocal.auth.toArray();
+            let token = collection[0].token;
+            if (!token) return false;
             return true;
         } catch (error) {
             return false;

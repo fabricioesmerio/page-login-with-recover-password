@@ -35,6 +35,8 @@
     "@ngrx/store": "13.0.2",
     "bootstrap": "^4.6.0",
     "core-js": "3.8.0",
+    "crypto-js": "^4.1.1",
+    "dexie": "^3.2.2",
     "gatekeeper-client-sdk": "0.4.2",
     "luxon": "2.3.0",
     "ngx-toastr": "14.2.1",

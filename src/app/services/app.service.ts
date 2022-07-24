@@ -1,7 +1,19 @@
-import {Injectable} from '@angular/core';
-import {Router} from '@angular/router';
-import {ToastrService} from 'ngx-toastr';
-import {Gatekeeper} from 'gatekeeper-client-sdk';
+import { Injectable } from '@angular/core';
+import { ToastrService } from 'ngx-toastr';
+import { RegisterModel } from '@modules/register/models/register.model';
+import { Login } from '@modules/login/models/login.model';
+import { ApiService } from './api.service';
+import { ApiRoutesEnum } from '@/utils/apiRoutes.enum';
+
+export interface ResultValidateCode {
+    success: boolean,
+    message?: string
+}
+
+export interface RecoverPasswordInput {
+    email: string;
+    novaSenha: string
+}
 
 @Injectable({
     providedIn: 'root'
@@ -9,87 +21,52 @@ import {Gatekeeper} from 'gatekeeper-client-sdk';
 export class AppService {
     public user: any = null;
 
-    constructor(private router: Router, private toastr: ToastrService) {}
+    constructor(
+        private toastr: ToastrService,
+        private apiService: ApiService<any>
+    ) { }
 
-    async loginByAuth({email, password}) {
+    async loginByAuth(args: Login): Promise<{token: string}> {
         try {
-            const token = await Gatekeeper.loginByAuth(email, password);
-            localStorage.setItem('token', token);
-            await this.getProfile();
-            this.router.navigate(['/']);
+            return this.apiService.post<{token: string}>(ApiRoutesEnum.Login, args).toPromise();
         } catch (error) {
-            this.toastr.error(error.message);
-        }
-    }
-
-    async registerByAuth({email, password}) {
-        try {
-            const token = await Gatekeeper.registerByAuth(email, password);
-            localStorage.setItem('token', token);
-            await this.getProfile();
-            this.router.navigate(['/']);
-        } catch (error) {
-            this.toastr.error(error.message);
-        }
-    }
-
-    async loginByGoogle() {
-        try {
-            const token = await Gatekeeper.loginByGoogle();
-            localStorage.setItem('token', token);
-            await this.getProfile();
-            this.router.navigate(['/']);
-        } catch (error) {
-            this.toastr.error(error.message);
-        }
-    }
-
-    async registerByGoogle() {
-        try {
-            const token = await Gatekeeper.registerByGoogle();
-            localStorage.setItem('token', token);
-            await this.getProfile();
-            this.router.navigate(['/']);
-        } catch (error) {
-            this.toastr.error(error.message);
-        }
-    }
-
-    async loginByFacebook() {
-        try {
-            const token = await Gatekeeper.loginByFacebook();
-            localStorage.setItem('token', token);
-            await this.getProfile();
-            this.router.navigate(['/']);
-        } catch (error) {
-            this.toastr.error(error.message);
-        }
-    }
-
-    async registerByFacebook() {
-        try {
-            const token = await Gatekeeper.registerByFacebook();
-            localStorage.setItem('token', token);
-            await this.getProfile();
-            this.router.navigate(['/']);
-        } catch (error) {
-            this.toastr.error(error.message);
-        }
-    }
-
-    async getProfile() {
-        try {
-            this.user = await Gatekeeper.getProfile();
-        } catch (error) {
-            this.logout();
             throw error;
         }
     }
 
-    logout() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('gatekeeper_token');
-        this.user = null;
-        this.router.navigate(['/login']);
+    async registerByAuth(args: RegisterModel) {
+        try {
+            return this.apiService.post(ApiRoutesEnum.User, args).toPromise();
+        } catch (error) {
+            this.toastr.error(error.message);
+        }
     }
+
+    forgotPassword(args: { email: string }) {
+        try {
+            return this.apiService.post(ApiRoutesEnum.ForgotPassword, args).toPromise();
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    validateCode(args: { email: string, codigo: string }): Promise<ResultValidateCode> {
+        try {
+            return this.apiService.post<ResultValidateCode>(ApiRoutesEnum.ValidateCode, args).toPromise();
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    recoverPassword(args: RecoverPasswordInput) {
+        try {
+            return this.apiService.post<number>(ApiRoutesEnum.RecoverPassword, args).toPromise();
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    getProfile() { }
+
+    logout() { }
 }

@@ -139,3 +139,58 @@ body {
 .content {
     padding: 0 0.5rem;
 }
+
+.no-padding {
+    padding: 0;
+}
+
+.pd-r-8 {
+    padding-right: 8px;
+}
+
+.pd-l-8 {
+    padding-left: 8px;
+}
+
+.signin button {
+    width: 100%;
+}
+
+.reset-pwd-text {
+    text-align: right;
+    font-size: 12px;
+    font-style: italic;
+    padding-top: 4px;
+}
+
+.loading {
+    position: absolute;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    background-color: #495057;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    img {
+        width: 128px;
+        transform: translateY(0px);
+        animation: float 1.5s ease-in-out infinite;
+    }
+}
+
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-30px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}

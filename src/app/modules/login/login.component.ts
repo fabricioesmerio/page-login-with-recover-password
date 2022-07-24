@@ -5,27 +5,32 @@ import {
     Renderer2,
     HostBinding
 } from '@angular/core';
-import {FormGroup, FormControl, Validators} from '@angular/forms';
-import {ToastrService} from 'ngx-toastr';
-import {AppService} from '@services/app.service';
+import { FormGroup, FormControl, Validators } from '@angular/forms';
+import { ToastrService } from 'ngx-toastr';
+import { AppService } from '@services/app.service';
+import { CryptoService } from '@services/crypto.service';
+import { PageBaseComponent } from '@/shared/page.base.component';
+import { BancoLocal } from '@/shared/indexeddb.service';
+import { Router } from '@angular/router';
 
 @Component({
     selector: 'app-login',
     templateUrl: './login.component.html',
     styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit, OnDestroy {
+export class LoginComponent extends PageBaseComponent implements OnInit, OnDestroy {
     @HostBinding('class') class = 'login-box';
+
     public loginForm: FormGroup;
-    public isAuthLoading = false;
-    public isGoogleLoading = false;
-    public isFacebookLoading = false;
 
     constructor(
         private renderer: Renderer2,
-        private toastr: ToastrService,
-        private appService: AppService
-    ) {}
+        private appService: AppService,
+        private router: Router,
+        toastr: ToastrService
+    ) {
+        super(toastr);
+    }
 
     ngOnInit() {
         this.renderer.addClass(
@@ -33,31 +38,48 @@ export class LoginComponent implements OnInit, OnDestroy {
             'login-page'
         );
         this.loginForm = new FormGroup({
-            email: new FormControl(null, Validators.required),
+            email: new FormControl(null, [Validators.required, Validators.email]),
             password: new FormControl(null, Validators.required)
         });
     }
 
     async loginByAuth() {
-        if (this.loginForm.valid) {
-            this.isAuthLoading = true;
-            await this.appService.loginByAuth(this.loginForm.value);
-            this.isAuthLoading = false;
-        } else {
-            this.toastr.error('Form is not valid!');
+        try {
+            if (this.loginForm.valid) {
+                this.loading = true;
+                let crypto = new CryptoService();
+                let senhaCrypt = crypto.encrypt(this.loginForm.get('password').value)
+                let result = await this.appService.loginByAuth({
+                    email: this.loginForm.get('email').value,
+                    password: senhaCrypt
+                });
+                if (result) {
+                    this.toastr.success('Login efetuado com sucesso!');
+                    await this.setToken(result.token);
+                    this.router.navigate(['app'])
+                }
+                else
+                    this.toastr.error('Ocorreu um erro!');
+            } else {
+                this.toastr.error('Formulário inválido!');
+            }
+        } catch (ex) {
+            this.handleError(ex);
+        } finally {
+            this.loading = false;
         }
+
     }
 
-    async loginByGoogle() {
-        this.isGoogleLoading = true;
-        await this.appService.loginByGoogle();
-        this.isGoogleLoading = false;
-    }
-
-    async loginByFacebook() {
-        this.isFacebookLoading = true;
-        await this.appService.loginByFacebook();
-        this.isFacebookLoading = false;
+    private async setToken(token: string) {
+        try {
+            await BancoLocal.auth.clear();
+            await BancoLocal.auth.add({
+                token
+            });
+        } catch (error) {
+            this.handleError(error);
+        }
     }
 
     ngOnDestroy() {

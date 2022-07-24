@@ -16,7 +16,37 @@ import {SubMenuComponent} from '@pages/main-menu/sub-menu/sub-menu.component';
 
 const routes: Routes = [
     {
-        path: '',
+        path: 'login',
+        component: LoginComponent,
+        canActivate: [NonAuthGuard]
+    },
+    {
+        path: 'register',
+        component: RegisterComponent,
+        canActivate: [NonAuthGuard]
+    },
+    {
+        path: 'forgot-password',
+        component: ForgotPasswordComponent,
+        canActivate: [NonAuthGuard]
+    },
+    {
+        path: 'recover-password',
+        component: RecoverPasswordComponent,
+        canActivate: [NonAuthGuard]
+    },
+    {
+        path: 'recover-password/:code',
+        component: RecoverPasswordComponent,
+        canActivate: [NonAuthGuard]
+    },
+    {
+        path: 'privacy-policy',
+        component: PrivacyPolicyComponent,
+        canActivate: [NonAuthGuard]
+    },
+    {
+        path: 'app',
         component: MainComponent,
         canActivate: [AuthGuard],
         canActivateChild: [AuthGuard],
@@ -43,32 +73,7 @@ const routes: Routes = [
             }
         ]
     },
-    {
-        path: 'login',
-        component: LoginComponent,
-        canActivate: [NonAuthGuard]
-    },
-    {
-        path: 'register',
-        component: RegisterComponent,
-        canActivate: [NonAuthGuard]
-    },
-    {
-        path: 'forgot-password',
-        component: ForgotPasswordComponent,
-        canActivate: [NonAuthGuard]
-    },
-    {
-        path: 'recover-password',
-        component: RecoverPasswordComponent,
-        canActivate: [NonAuthGuard]
-    },
-    {
-        path: 'privacy-policy',
-        component: PrivacyPolicyComponent,
-        canActivate: [NonAuthGuard]
-    },
-    {path: '**', redirectTo: ''}
+    {path: '**', redirectTo: 'app'}
 ];
 
 @NgModule({
